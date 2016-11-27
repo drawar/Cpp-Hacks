@@ -1,0 +1,87 @@
+\documentclass[11pt, a4paper]{article} % A4 paper size by default, use 'letterpaper' for US letter
+\usepackage{geometry}
+
+\geometry{left=2cm, top=1.4cm, right=2cm, bottom=2cm} % Configure page margins with geometry
+\usepackage[utf8]{inputenc}
+
+\usepackage{helvet}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstset{language=C++,
+                basicstyle=\ttfamily,
+                keywordstyle=\color{blue}\ttfamily,
+                stringstyle=\color{red}\ttfamily,
+                commentstyle=\color{green}\ttfamily,
+                morecomment=[l][\color{magenta}]{\#}
+}
+
+\begin{document}
+iostream version:
+\begin{lstlisting}
+#include <iostream>
+
+int main(int argc, char **argv) {
+
+  int parity = 0;
+  int x;
+
+  while (std::cin >> x)
+    parity ^= x;
+  std::cout << parity << std::endl;
+
+  return 0;
+}
+\end{lstlisting}
+scanf version
+\begin{lstlisting}
+#include <stdio.h>
+
+int main(int argc, char **argv) {
+
+  int parity = 0;
+  int x;
+
+  while (1 == scanf("%d", &x))
+    parity ^= x;
+  printf("%d\n", parity);
+
+  return 0;
+}
+\end{lstlisting}
+Result:
+Using a third program, I generated a text file containing 33,280,276 random numbers. The execution times are:
+\begin{lstlisting}
+iostream version:  24.3 seconds
+scanf version:      6.4 seconds
+\end{lstlisting}
+The speed difference is largely due to the iostream I/O functions maintaining synchronization with the C I/O functions. We can turn this off with a call to 
+\begin{lstlisting}
+std::ios::sync_with_stdio(false);
+\end{lstlisting}
+
+\begin{lstlisting}
+#include <iostream>
+
+int main(int argc, char **argv) {
+
+  int parity = 0;
+  int x;
+
+  std::ios::sync_with_stdio(false);
+
+  while (std::cin >> x)
+    parity ^= x;
+  std::cout << parity << std::endl;
+
+  return 0;
+}
+\end{lstlisting}
+New result:
+\begin{lstlisting}
+iostream version:                       21.9 seconds
+scanf version:                           6.8 seconds
+iostream with sync_with_stdio(false):    5.5 seconds
+\end{lstlisting}
+C++ iostream wins! It turns out that this internal syncing / flushing is what normally slows down iostream i/o. If we're not mixing cstdio and iostream, we can turn it off, and then iostream is fastest.
+\end{document}
